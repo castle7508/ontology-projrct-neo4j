@@ -1,0 +1,35 @@
+# Python
+tools/.venv/
+tools/data/
+tools/__pycache__/
+tools/**/__pycache__/
+tools/*.egg-info/
+*.pyc
+
+# bkit
+.bkit/
+
+# Documents (1.3GB original files - too large for git)
+documents/
+
+# Neo4j
+plugins/
+data/
+logs/
+import/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Build artifacts
+*.egg-info/
+tools/*.egg-info/
+tools/**/*.egg-info/
+
+# Obsidian
+textbook/.obsidian/
+
+# Claude Code
+.claude/
