@@ -43,3 +43,10 @@ def ensure_dirs():
     """중간 산출물 디렉토리 생성"""
     for d in [PARSED_DIR, CLEANED_DIR, ANALYZED_DIR, EXTRACTED_DIR]:
         d.mkdir(parents=True, exist_ok=True)
+
+
+import os
+
+# Gemini API 설정
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_MODEL = "gemini-2.5-flash"
