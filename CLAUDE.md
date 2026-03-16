@@ -21,7 +21,7 @@ IT 도메인 학습 문서(DOC/DOCX) 2,392개를 Neo4j 지식그래프로 변환
 - **이미지**: neo4j:2025.02.0-enterprise
 - **컨테이너명**: neo4j-ontology
 - **접속**: http://localhost:7474 (Browser), bolt://localhost:7687 (Bolt)
-- **인증**: neo4j / ontology2025!
+- **인증**: neo4j / ontology2025
 - **플러그인**: APOC 2025.02.0 + GDS 2.15.0 + n10s 5.26.0
 
 ### 주요 명령어
@@ -36,8 +36,8 @@ docker-compose ps                 # 상태 확인
 
 **Cypher 적재 (cypher-shell):**
 ```bash
-docker exec -i neo4j-ontology cypher-shell -u neo4j -p ontology2025! < cypher/00_schema.cypher
-docker exec -i neo4j-ontology cypher-shell -u neo4j -p ontology2025! < cypher/ai_001_010.cypher
+docker exec -i neo4j-ontology cypher-shell -u neo4j -p ontology2025 < cypher/00_schema.cypher
+docker exec -i neo4j-ontology cypher-shell -u neo4j -p ontology2025 < cypher/ai_001_010.cypher
 ```
 
 **Neo4j Browser:** http://localhost:7474 에서 Cypher 쿼리 직접 실행
@@ -67,6 +67,9 @@ ontology-project-neo4j/
 │   ├── generate/            ← Cypher MERGE 생성기
 │   ├── load/                ← Neo4j 적재기 (cypher-shell 자동화)
 │   ├── graphrag/            ← GraphRAG 검색기 (그래프 탐색 → 컨텍스트 생성)
+│   ├── neo4j_mcp/           ← MCP Server (FastMCP, 7개 도구)
+│   │   ├── __init__.py
+│   │   └── server.py        ← Claude Code AI 에이전트 도구
 │   ├── PLAN.md              ← 파이프라인 계획서
 │   ├── data/parsed/         ← 파싱 결과 JSON (2,381개, 43MB)
 │   └── data/extracted/      ← 추출 결과 JSON (중간 산출물)
@@ -178,10 +181,10 @@ cd ontology-project-neo4j\tools
 ### Cypher 적재 패턴 (수동)
 ```bash
 # 스키마 먼저 (최초 1회)
-docker exec -i neo4j-ontology cypher-shell -u neo4j -p ontology2025! < cypher/00_schema.cypher
+docker exec -i neo4j-ontology cypher-shell -u neo4j -p ontology2025 < cypher/00_schema.cypher
 
 # 데이터 (도메인별)
-docker exec -i neo4j-ontology cypher-shell -u neo4j -p ontology2025! < cypher/ai_001_050.cypher
+docker exec -i neo4j-ontology cypher-shell -u neo4j -p ontology2025 < cypher/ai_001_050.cypher
 ```
 
 ## Cypher 생성 규칙
@@ -192,6 +195,48 @@ docker exec -i neo4j-ontology cypher-shell -u neo4j -p ontology2025! < cypher/ai
 - 작은따옴표 내 아포스트로피는 큰따옴표로 감싸기: "Metcalfe's Law"
 - Domain 노드의 name은 한글 유지 (영문 덮어쓰기 금지)
 - Top 50 시드 Concept과 동일 id 사용하여 MERGE로 자동 연결
+
+## MCP AI 에이전트 (Neo4j Ontology Agent)
+
+### 개요
+FastMCP 서버를 통해 Claude Code가 직접 Neo4j 지식그래프를 탐색하는 AI 에이전트.
+자연어 질문 → MCP 도구 호출 → 그래프 탐색 → LLM 추론 답변 자동 생성.
+
+### MCP 서버 설정
+`.mcp.json`에 등록됨. Claude Code 재시작 시 자동 로드.
+
+```json
+{
+  "mcpServers": {
+    "neo4j-ontology": {
+      "command": "tools/.venv/Scripts/python.exe",
+      "args": ["-m", "neo4j_mcp.server"],
+      "cwd": "tools/"
+    }
+  }
+}
+```
+
+### 7개 MCP 도구
+
+| 도구 | 용도 | 예시 질문 |
+|------|------|-----------|
+| `search_concepts` | 키워드로 개념 검색 (진입점) | "딥러닝 검색해줘" |
+| `get_prerequisites` | 선수학습 경로 탐색 | "딥러닝 공부하려면 뭘 먼저 알아야 해?" |
+| `get_related` | N-hop 관련 개념 탐색 | "AES와 연결된 개념들 보여줘" |
+| `compare_concepts` | 두 개념 비교 분석 | "AES와 DES 비교해줘" |
+| `find_questions` | 기출문제 검색 | "네트워크 보안 기출문제 찾아줘" |
+| `domain_overview` | 도메인별 개요 + 통계 | "AI 도메인 핵심 개념 요약해줘" |
+| `cross_domain_links` | 도메인 간 교차 개념 | "AI와 DB는 어떻게 연결돼?" |
+
+### 사용 흐름
+1. `search_concepts`로 개념 검색 → concept_id 확인
+2. concept_id를 사용하여 `get_prerequisites`, `get_related`, `compare_concepts` 호출
+3. 도메인 코드로 `domain_overview`, `cross_domain_links` 호출
+
+### 전제 조건
+- Neo4j Docker 실행 중: `docker-compose up -d`
+- 비밀번호: `ontology2025` (config.py)
 
 ## 알려진 이슈
 - 한글 ID 44.3% 잔존 (영문 매핑 없는 순수 한글 용어)

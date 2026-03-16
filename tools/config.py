@@ -19,7 +19,7 @@ EXTRACTED_DIR = DATA_DIR / "extracted"
 # Neo4j 접속 정보
 NEO4J_URI = "bolt://localhost:7687"
 NEO4J_USER = "neo4j"
-NEO4J_PASSWORD = "ontology2025!"
+NEO4J_PASSWORD = "ontology2025"
 
 # 13개 도메인 코드
 DOMAINS = {

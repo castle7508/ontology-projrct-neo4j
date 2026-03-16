@@ -16,7 +16,7 @@
 # 접속:
 #   Browser UI:  http://localhost:7474
 #   Bolt:        bolt://localhost:7687
-#   ID/PW:       neo4j / ontology2025!
+#   ID/PW:       neo4j / ontology2025
 #
 # 중지:
 #   docker-compose down          (데이터 유지)
@@ -39,7 +39,7 @@ services:
       - "7687:7687"    # Bolt Protocol (앱 연결용)
     environment:
       # ── 인증 ──
-      - NEO4J_AUTH=neo4j/ontology2025!
+      - NEO4J_AUTH=neo4j/ontology2025
 
       # ── Enterprise 라이선스 (개발/평가 무료) ──
       - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
@@ -77,7 +77,7 @@ services:
       - ./documents:/documents
 
     healthcheck:
-      test: ["CMD-SHELL", "cypher-shell -u neo4j -p 'ontology2025!' 'RETURN 1' || exit 1"]
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p 'ontology2025' 'RETURN 1' || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 10
