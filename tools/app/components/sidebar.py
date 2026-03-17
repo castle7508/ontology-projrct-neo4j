@@ -2,9 +2,6 @@
 import streamlit as st
 from neo4j import GraphDatabase
 
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 import config
 
 
@@ -13,9 +10,6 @@ DOMAIN_OPTIONS = {f"{code} ({info['name']})": code for code, info in config.DOMA
 
 def render_sidebar():
     """사이드바 렌더링. Tutor 인스턴스를 반환 (또는 None)."""
-    from agent.llm import GeminiClient
-    from agent.tutor import Tutor
-
     st.sidebar.title("⚙️ 설정")
 
     # ── API 키 ──

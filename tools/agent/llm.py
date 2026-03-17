@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class GeminiClient:
     """Gemini API 클라이언트. 텍스트 생성, 스트리밍, 구조화 출력 지원."""
 
-    def __init__(self, api_key: str, model: str = "gemini-2.5-flash"):
+    def __init__(self, api_key: str, model: str = "gemini-3-flash-preview"):
         self.client = genai.Client(api_key=api_key)
         self.model = model
         self.total_input_tokens = 0
@@ -62,6 +62,10 @@ class GeminiClient:
             for chunk in response:
                 if chunk.text:
                     yield chunk.text
+                # 마지막 청크에 usage_metadata 포함
+                if hasattr(chunk, "usage_metadata") and chunk.usage_metadata:
+                    self.total_input_tokens += chunk.usage_metadata.prompt_token_count or 0
+                    self.total_output_tokens += chunk.usage_metadata.candidates_token_count or 0
         except Exception as e:
             logger.warning(f"스트리밍 중 에러: {e}")
             yield f"\n\n⚠️ 생성 중 오류 발생: {e}"
